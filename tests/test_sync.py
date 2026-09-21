@@ -111,14 +111,14 @@ class TestSyncServiceWithMock(unittest.TestCase):
         mock_download.return_value = True
 
         mock_get_issue.return_value = {
-            "key": "WCE-962",
+            "key": "DEMO-101",
             "fields": {
                 "summary": "Fix authentication crash on mobile",
                 "status": {"name": "In Progress"},
                 "issuetype": {"name": "Bug"},
                 "priority": {"name": "High"},
-                "assignee": {"displayName": "Dev Nam"},
-                "reporter": {"displayName": "QA Lan"},
+                "assignee": {"displayName": "Alex Taylor"},
+                "reporter": {"displayName": "Sam Morgan"},
                 "created": "2026-09-01T08:00:00Z",
                 "updated": "2026-09-21T09:00:00Z",
                 "labels": ["mobile", "auth"],
@@ -143,7 +143,7 @@ class TestSyncServiceWithMock(unittest.TestCase):
                 "histories": [
                     {
                         "created": "2026-09-20T10:00:00Z",
-                        "author": {"displayName": "Dev Nam"},
+                        "author": {"displayName": "Alex Taylor"},
                         "items": [{"field": "status", "fromString": "Open", "toString": "In Progress"}],
                     }
                 ]
@@ -151,47 +151,47 @@ class TestSyncServiceWithMock(unittest.TestCase):
         }
 
         service = SyncService(self.config)
-        result = service.sync("WCE-962")
+        result = service.sync("DEMO-101")
 
         self.assertTrue(result.success)
-        self.assertEqual(result.key, "WCE-962")
+        self.assertEqual(result.key, "DEMO-101")
         self.assertEqual(result.assets_downloaded, 1)
 
         # Check that ticket.md and history.md were created
-        ticket_file = self.test_dir / "tickets" / "WCE-962" / "ticket.md"
-        history_file = self.test_dir / "tickets" / "WCE-962" / "history.md"
+        ticket_file = self.test_dir / "tickets" / "DEMO-101" / "ticket.md"
+        history_file = self.test_dir / "tickets" / "DEMO-101" / "history.md"
 
         self.assertTrue(ticket_file.exists())
         self.assertTrue(history_file.exists())
 
         ticket_content = ticket_file.read_text(encoding="utf-8")
-        self.assertIn("WCE-962", ticket_content)
+        self.assertIn("DEMO-101", ticket_content)
         self.assertIn("Fix authentication crash on mobile", ticket_content)
         self.assertIn("App crashes when token expires.", ticket_content)
         self.assertIn("assets/crash-trace.png", ticket_content)
 
         history_content = history_file.read_text(encoding="utf-8")
-        self.assertIn("Dev Nam", history_content)
+        self.assertIn("Alex Taylor", history_content)
         self.assertIn("`Open` ➔ `In Progress`", history_content)
 
     @patch.object(JiraClient, "get_issue")
     def test_sync_error_handling(self, mock_get_issue):
         mock_get_issue.side_effect = JiraApiError(404, "Ticket not found")
         service = SyncService(self.config)
-        result = service.sync("WCE-999")
+        result = service.sync("DEMO-999")
         self.assertFalse(result.success)
         self.assertIn("Ticket not found", result.message)
 
     @patch.object(JiraClient, "get_issue")
     def test_sync_key_from_url(self, mock_get_issue):
         mock_get_issue.return_value = {
-            "key": "WCE-986",
-            "fields": {"summary": "Investigate Opt Out Data"},
+            "key": "DEMO-102",
+            "fields": {"summary": "Analyze export preferences"},
             "changelog": {"histories": []},
         }
         service = SyncService(self.config)
-        result = service.sync("https://test.atlassian.net/browse/WCE-986")
-        self.assertEqual(result.key, "WCE-986")
+        result = service.sync("https://test.atlassian.net/browse/DEMO-102")
+        self.assertEqual(result.key, "DEMO-102")
 
 
 if __name__ == "__main__":
